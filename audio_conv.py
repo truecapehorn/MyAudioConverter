@@ -12,6 +12,9 @@ except Exception:
 
 export_dir = os.getcwd() + '/Export'
 
+wej=input("Podaj format wejsciowy: ")
+wyj = input("Podaj format wyjsciowy: ")
+
 
 def make_dir(audio_files):
     global export_dir_album, artist, album
@@ -32,17 +35,17 @@ def make_dir(audio_files):
 def make_audio_files(file):
     # for file in audio_files:
     filename = os.path.splitext(os.path.basename(file))[0]
-    mp3_filename = filename + '.mp3'
+    mp3_filename = filename + f'.{wyj}'
     print(f'Start: {mp3_filename}')
     AudioSegment.from_file(file).export(export_dir_album + '/' + mp3_filename,
-                                        format='mp3',
+                                        format=wyj,
                                         tags={'artist': artist, 'album': album, 'title': filename})
     return mp3_filename
 
 
 for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
     os.chdir(dirpath)
-    audio_files = glob.glob('*.flac')
+    audio_files = glob.glob(f'*.{wej}')
     if len(audio_files) > 0:
         try:
             export_dir_album, artist, album = make_dir(audio_files)
