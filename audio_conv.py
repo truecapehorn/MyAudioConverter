@@ -12,7 +12,7 @@ except Exception:
 
 export_dir = os.getcwd() + '/Export'
 
-wej=input("Podaj format wejsciowy: ")
+wej = input("Podaj format wejsciowy: ")
 wyj = input("Podaj format wyjsciowy: ")
 
 
@@ -22,12 +22,20 @@ def make_dir(audio_files):
         info = mediainfo(file).get('TAG', None)
         # print(info)
         try:
-            artist = info['ARTIST']
-            album = info['ALBUM']
-            export_dir_album = f'{export_dir}/{artist}/{album}'
-            os.makedirs(export_dir_album)
+            if 'ARTIST' in info.keys():
+                artist = info['ARTIST']
+                album = info['ALBUM']
+            elif 'artist' in info.keys():
+                artist = info['artist']
+                album = info['album']
         except Exception:
-            pass
+            artist = input("Podaj artyste: ")
+            album = input("Podaj album: ")
+    try:
+        export_dir_album = f'{export_dir}/{artist}/{album}'
+        os.makedirs(export_dir_album)
+    except Exception:
+        pass
     print(export_dir_album)
     return export_dir_album, artist, album
 
@@ -47,6 +55,7 @@ for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
     os.chdir(dirpath)
     audio_files = glob.glob(f'*.{wej}')
     if len(audio_files) > 0:
+        # print(audio_files)
         try:
             export_dir_album, artist, album = make_dir(audio_files)
         except Exception as e:
