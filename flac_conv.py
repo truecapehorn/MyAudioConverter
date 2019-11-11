@@ -4,6 +4,12 @@ from pydub import AudioSegment
 from pydub.utils import mediainfo
 import concurrent.futures
 
+try:
+    os.mkdir('Export')
+    os.mkdir('Source')
+except Exception:
+    pass
+
 export_dir = os.getcwd() + '/Export'
 
 
