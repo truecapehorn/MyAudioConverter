@@ -57,17 +57,18 @@ def make_audio_files(file):
 
 for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
     os.chdir(dirpath)
+    audio_files=[]
     for w in wej:
-        audio_files = glob.glob(f'*.{w}')
-        if len(audio_files) > 0:
-            # print(audio_files)
-            try:
-                export_dir_album, artist, album = make_dir(audio_files)
-            except Exception as e:
-                print(f'Problem w {dirpath}')
-                exit(1)
+        audio_files.extend(glob.glob(f'*.{w}'))
+    if len(audio_files) > 0:
+        print(audio_files)
+        try:
+            export_dir_album, artist, album = make_dir(audio_files)
+        except Exception as e:
+            print(f'Problem w {dirpath}')
+            exit(1)
 
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(make_audio_files, audio_files)
-            for result in results:
-                print(f'Koniec: {result}')
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(make_audio_files, audio_files)
+        for result in results:
+            print(f'Koniec: {result}')
