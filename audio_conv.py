@@ -15,20 +15,24 @@ export_dir = os.getcwd() + '/Export'
 wej = input("Podaj format wejsciowy: ")
 wyj = input("Podaj format wyjsciowy: ")
 
+wej= wej.split(',')
+print(wej)
 
 def make_dir(audio_files):
     global export_dir_album, artist, album
     for file in audio_files:
-        info = mediainfo(file).get('TAG', None)
-        # print(info)
+
         try:
+            info = mediainfo(file).get('TAG', None)
+            # print(info)
             if 'ARTIST' in info.keys():
-                artist = info['ARTIST']
-                album = info['ALBUM']
+                artist, album = info['ARTIST'], info['ALBUM']
             elif 'artist' in info.keys():
-                artist = info['artist']
-                album = info['album']
+                artist, album = info['artist'], info['album']
+            else:
+                artist, album = "Brak", "Brak"
         except Exception:
+            print(f'Folder: {os.getcwd()}; Plik: {file}')
             artist = input("Podaj artyste: ")
             album = input("Podaj album: ")
     try:
@@ -53,16 +57,17 @@ def make_audio_files(file):
 
 for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
     os.chdir(dirpath)
-    audio_files = glob.glob(f'*.{wej}')
-    if len(audio_files) > 0:
-        # print(audio_files)
-        try:
-            export_dir_album, artist, album = make_dir(audio_files)
-        except Exception as e:
-            print(f'Brak metadanych w {dirpath}')
-            exit(1)
+    for w in wej:
+        audio_files = glob.glob(f'*.{w}')
+        if len(audio_files) > 0:
+            # print(audio_files)
+            try:
+                export_dir_album, artist, album = make_dir(audio_files)
+            except Exception as e:
+                print(f'Problem w {dirpath}')
+                exit(1)
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = executor.map(make_audio_files, audio_files)
-        for result in results:
-            print(f'Koniec: {result}')
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                results = executor.map(make_audio_files, audio_files)
+            for result in results:
+                print(f'Koniec: {result}')
