@@ -12,11 +12,11 @@ except Exception:
 
 export_dir = os.getcwd() + '/Export'
 
-wej = input("Podaj format wejsciowy:> ")
-wyj = input("Podaj format wyjsciowy:> ")
+# wej = input("Podaj format wejsciowy:> ")
+# wyj = input("Podaj format wyjsciowy:> ")
 
-# wej = 'flac'
-# wyj = 'mp3'
+wej = 'mp3'
+wyj = 'mp3'
 
 wej = wej.split(',')
 print(wej)
@@ -24,6 +24,7 @@ print(wej)
 
 def get_metadata(audio_files):
     metadata = []
+    info = {}
     for file in audio_files:
         try:
             info = mediainfo(file).get('TAG', None)
@@ -48,11 +49,10 @@ def get_metadata(audio_files):
                 album = input("Podaj album:> ")
                 disc = input("Podaj numer dysku:> ")
                 info = {"ARTIST": artist, "ALBUM": album, "DISC": disc}
-
-        info['FILE'] = file
-        print(info)
-        metadata.append(info)
-    print(f"Ilosc utworów: {len(metadata)}")
+        finally:
+            info['FILE'] = file
+            metadata.append(info)
+            print(info)
     return metadata
 
 
@@ -84,21 +84,30 @@ def make_audio_files(meta):
     return mp3_filename
 
 
-for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
+def main_program(dirpath):
     os.chdir(dirpath)
     audio_files = []
     for w in wej:
         audio_files.extend(glob.glob(f'*.{w}'))
     if len(audio_files) > 0:
-        print(audio_files)
+
         meta = get_metadata(audio_files)
         make_dir(meta)
-        print(meta)
+        print(f"{dirpath} - Ilosc utworów: {len(meta)}")
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
             results = executor.map(make_audio_files, meta)
-        for result in results:
-            try:
-                print(f'Koniec: {result}')
-            except Exception as e:
-                print(e)
+            for result in results:
+                try:
+                    print(f'Koniec: {result}')
+                except Exception as e:
+                    print(e)
+    return dirpath
+
+
+dirs = []
+for dirpath, dirnames, filenames in os.walk(os.getcwd() + '/Source'):
+    dirs.append(dirpath)
+
+for dir in dirs:
+    main_program(dir)
